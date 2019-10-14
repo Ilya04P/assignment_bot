@@ -1,9 +1,12 @@
 import logging
-from telegram.ext import Updater, CommandHandler
+from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
+                          ConversationHandler)
 
 from db import db, create_chat, create_user
 from settings import API_KEY, PROXY
 from utils import get_keyboard
+
+from notes import note_body, note_caption, note_start
 
 # Enable logging
 logging.basicConfig(
@@ -35,9 +38,25 @@ def main():
     ''' Start bot '''
     updater = Updater(API_KEY, request_kwargs=PROXY, use_context=True)
 
+    # Dispatcher to register handler
     dp = updater.dispatcher
 
+    # Handlers
     dp.add_handler(CommandHandler('start', start))
+
+    conv_handler = ConversationHandler(
+        entry_points=[MessageHandler(Filters.regex('^Заметка$'), note_start)],
+
+        states={
+            'NOTE_CAPTION': [MessageHandler(Filters.text, note_caption)],
+
+            'NOTE_BODY': [MessageHandler(Filters.text, note_body)]
+        },
+
+        fallbacks=[]
+    )
+
+    dp.add_handler(conv_handler)
 
     # log errors
     dp.add_error_handler(error)
