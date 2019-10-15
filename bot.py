@@ -45,11 +45,13 @@ def main():
     dp.add_handler(CommandHandler('start', start))
 
     conv_handler = ConversationHandler(
-        entry_points=[MessageHandler(Filters.regex('^Заметка$'), note_start)],
+        entry_points=[
+            MessageHandler(Filters.regex('^Заметка$'), note_start),
+            CommandHandler('note', note_start)
+        ],
 
         states={
             'NOTE_CAPTION': [MessageHandler(Filters.text, note_caption)],
-
             'NOTE_BODY': [MessageHandler(Filters.text, note_body)]
         },
 
