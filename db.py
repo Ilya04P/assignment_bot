@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pymongo import MongoClient
 import ssl
 
@@ -8,7 +10,7 @@ db = MongoClient(MONGO_LINK, ssl_cert_reqs=ssl.CERT_NONE)[MONGO_DB]
 
 
 # Create User if not exists
-def create_user(db, effective_user):
+def get_or_create_user(db, effective_user):
     user = db.users.find_one({'user_id': effective_user.id})
     if not user:
         user = {
@@ -23,7 +25,7 @@ def create_user(db, effective_user):
 
 
 # Create Chat if not exists
-def create_chat(db, effective_chat):
+def get_or_create_chat(db, effective_chat):
     chat = db.chats.find_one({'chat_id': effective_chat.id})
     if not chat:
         chat = {
@@ -33,3 +35,24 @@ def create_chat(db, effective_chat):
         }
         db.chats.insert_one(chat)
     return chat
+
+
+# Create and return chat
+def create_note(db, chat, caption, text):
+    notes_count = chat['notes']
+    time_now = int(datetime.now().timestamp())
+    note = {
+        'note_id': 'N{}'.format(notes_count + 1),
+        'chat_id': chat['_id'],
+        'caption': caption,
+        'text': text,
+        'd_create': time_now,
+        'd_modify': time_now
+    }
+    db.notes.insert_one(note)
+    db.chats.update_one(
+        {'_id': chat['_id']},
+        {'$set': {'notes': notes_count + 1}}
+    )
+
+    return note

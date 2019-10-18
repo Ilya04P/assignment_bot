@@ -2,11 +2,11 @@ import logging
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
                           ConversationHandler)
 
-from db import db, create_chat, create_user
+from db import db, get_or_create_chat, get_or_create_user
 from settings import API_KEY, PROXY
 from utils import get_keyboard
 
-from notes import note_body, note_caption, note_start
+from notes import note_caption, note_start, note_text
 
 # Enable logging
 logging.basicConfig(
@@ -18,8 +18,8 @@ logger = logging.getLogger(__name__)
 
 
 def start(update, context):
-    user = create_user(db, update.effective_user)
-    chat = create_chat(db, update.effective_chat)
+    user = get_or_create_user(db, update.effective_user)
+    chat = get_or_create_chat(db, update.effective_chat)
     update.message.reply_text(
         'Hello_{}!\n This chat is {}'.format(
             user['first_name'],
@@ -52,7 +52,7 @@ def main():
 
         states={
             'NOTE_CAPTION': [MessageHandler(Filters.text, note_caption)],
-            'NOTE_BODY': [MessageHandler(Filters.text, note_body)]
+            'NOTE_TEXT': [MessageHandler(Filters.text, note_text)]
         },
 
         fallbacks=[]
