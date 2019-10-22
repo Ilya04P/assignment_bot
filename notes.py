@@ -2,6 +2,7 @@ from telegram import ParseMode, ReplyKeyboardRemove
 from telegram.ext import ConversationHandler
 
 from db import db, get_or_create_chat, create_note
+from utils import get_note_keyboard, get_note_message
 
 
 # Start note converstation
@@ -29,13 +30,6 @@ def note_text(update, context):
     caption = context.user_data['caption']
     text = update.message.text
     note = create_note(db, chat, caption, text)
-    message_text = '''
-#{note_id}
-*{caption}*
-----
-{text}
-----
-{d_modify}'''.format(**note)
-    update.message.reply_text(message_text, parse_mode=ParseMode.MARKDOWN)
+    update.message.reply_text(get_note_message(note), parse_mode=ParseMode.MARKDOWN)
 
     return ConversationHandler.END
