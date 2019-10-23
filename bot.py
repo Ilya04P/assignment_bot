@@ -6,7 +6,8 @@ from db import db, get_or_create_chat, get_or_create_user
 from settings import API_KEY, PROXY
 from utils import get_keyboard
 
-from notes import note_caption, note_start, note_text
+from notes import (note_caption, note_start, note_text, note_clear,
+                   note_dont_clear, note_dont_know)
 
 # Enable logging
 logging.basicConfig(
@@ -41,10 +42,7 @@ def main():
     # Dispatcher to register handler
     dp = updater.dispatcher
 
-    # Handlers
-    dp.add_handler(CommandHandler('start', start))
-
-    conv_handler = ConversationHandler(
+    create_note_handler = ConversationHandler(
         entry_points=[
             MessageHandler(Filters.regex('^Заметка$'), note_start),
             CommandHandler('note', note_start)
@@ -52,13 +50,21 @@ def main():
 
         states={
             'NOTE_CAPTION': [MessageHandler(Filters.text, note_caption)],
-            'NOTE_TEXT': [MessageHandler(Filters.text, note_text)]
+            'NOTE_TEXT': [MessageHandler(Filters.text, note_text)],
+            'NOTE_CLEAR_CONVERSATION': [
+                MessageHandler(Filters.regex('^Оставить$'), note_dont_clear),
+                MessageHandler(Filters.regex('^Очистить$'), note_clear)
+            ]
         },
 
-        fallbacks=[]
+        fallbacks=[MessageHandler(
+            Filters.text | Filters.video | Filters.audio | Filters.document | Filters.photo, note_dont_know
+        )]
     )
 
-    dp.add_handler(conv_handler)
+    # Handlers
+    dp.add_handler(CommandHandler('start', start))
+    dp.add_handler(create_note_handler)
 
     # log errors
     dp.add_error_handler(error)
