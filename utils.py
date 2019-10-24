@@ -40,21 +40,16 @@ def get_note_keyboard():
 
 
 def get_note_message(note):
-    note_id = note['note_id']
-    caption = note['caption']
+    note_id = '#' + note['note_id']
+    caption = note['caption'].join(['**', '**'])
     text = note['text']
     d_modify = datetime.fromtimestamp(note['d_modify']).strftime('%d.%m.%Y %H:%M')
-    underline = ''
 
-    for e in range(len(caption)):
-        underline = underline + '-'
-
-    text_message = '#{}\n{}\n{}\n{}\n--\n{}'.format(
+    text_message = '\n'.join([
         note_id,
         caption,
-        underline,
         text,
         d_modify
-    )
+    ])
 
     return text_message
