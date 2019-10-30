@@ -17,21 +17,16 @@ def send_typing_action(func):
 
 def get_keyboard():
     general_keyboard = ReplyKeyboardMarkup([
-        ['Заметка']
-    ], resize_keyboard=True)
+        ['Notes']
+    ], resize_keyboard=True, one_time_keyboard=True)
     return general_keyboard
 
 
 def get_note_keyboard():
     note_keyboard = ReplyKeyboardMarkup(
             [
-                [
-                    ['Create note'],
-                    ['List notes']
-                ],
-                [
-                    ['Back']
-                ]
+                ['Create note', 'List notes'],
+                ['Back']
             ],
             resize_keyboard=True,
             one_time_keyboard=True
@@ -41,15 +36,13 @@ def get_note_keyboard():
 
 def get_note_message(note):
     note_id = '#' + note['note_id']
-    caption = note['caption'].join(['**', '**'])
-    text = note['text']
-    d_modify = datetime.fromtimestamp(note['d_modify']).strftime('%d.%m.%Y %H:%M')
+    caption = note['caption'].join('**')
+    text = '-\n' + note['text']
 
     text_message = '\n'.join([
         note_id,
         caption,
-        text,
-        d_modify
+        text
     ])
 
     return text_message

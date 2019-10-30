@@ -5,9 +5,24 @@ from db import db, get_or_create_chat, create_note
 from utils import get_note_keyboard, get_note_message, send_typing_action
 
 
+def note_menu(update, context):
+    update.message.reply_text('Что мне сделать?', reply_markup=get_note_keyboard())
+
+
 # Start note converstation
 @send_typing_action
 def note_start(update, context):
+    caption = ' '.join(context.args) # А точно ли нужен заголовок, если это быстрая заметка?
+    if caption:
+        context.user_data['caption'] = caption
+        print(context.user_data['caption'])
+        reply_text = update.message.reply_text(
+            'Добавь текст заметки...'
+        )
+        context.user_data['message_id'] = [update.effective_message.message_id]
+        context.user_data['message_id'].append(reply_text.message_id)
+        return 'NOTE_TEXT'
+
     reply_text = update.message.reply_text(
         "Добавь заголовок заметки...",
         reply_markup=ReplyKeyboardRemove()
@@ -42,8 +57,9 @@ def note_text(update, context):
         ['Очистить'], ['Оставить']
     ], resize_keyboard=True, one_time_keyboard=True)
 
-    update.message.reply_text(
-        get_note_message(note),
+    context.bot.send_message(
+        chat_id=chat['chat_id'],
+        text=get_note_message(note),
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=clear_keyboard
     )
@@ -52,7 +68,7 @@ def note_text(update, context):
 
 
 @send_typing_action
-def note_dont_clear(update, context):
+def note_cancel(update, context):
     if 'message_id' in context.user_data:
         del context.user_data['message_id']
 
